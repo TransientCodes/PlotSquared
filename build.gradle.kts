@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "com.intellectualsites.plotsquared"
-version = "7.5.11-SNAPSHOT"
+version = "7.5.8-SNAPSHOT"
 
 if (!File("$rootDir/.git").exists()) {
     logger.lifecycle("""
@@ -44,12 +44,21 @@ subprojects {
             url = uri("https://jitpack.io")
             content {
                 includeModule("com.github.MilkBowl", "VaultAPI")
+                includeModule("com.github.notKolja", "InjectLib")
             }
         }
 
         maven {
             name = "EngineHub"
             url = uri("https://maven.enginehub.org/repo/")
+        }
+
+        maven {
+            url = uri("https://maven.pkg.github.com/TransientCodes/TransientJobs")
+            credentials {
+                username = project.findProperty("gpr.user") as String?
+                password = project.findProperty("gpr.key") as String?
+            }
         }
     }
 
@@ -65,16 +74,12 @@ subprojects {
         plugin<IdeaPlugin>()
     }
 
-    configurations.matching { it.name == "signatures" }.configureEach {
-        attributes {
-            attribute(Attribute.of("signatures-unique", String::class.java), "true")
-        }
-    }
-
     dependencies {
         // Tests
-        testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+        implementation("gg.kpjm:transientjobs:1.9.5")
+        compileOnly("com.github.notKolja:InjectLib:0.1.3")
     }
 
     plugins.withId("java") {
@@ -101,15 +106,9 @@ subprojects {
         }
     }
 
-    afterEvaluate {
-        val javaComponent = components["java"] as AdhocComponentWithVariants
-        configurations.findByName("shadowRuntimeElements")?.let { shadowRuntimeElements ->
-            javaComponent.withVariantsFromConfiguration(shadowRuntimeElements) {
-                skip()
-            }
-        } ?: run {
-            logger.warn("Configuration 'shadowRuntimeElements' does not exist.")
-        }
+    val javaComponent = components["java"] as AdhocComponentWithVariants
+    javaComponent.withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
+        skip()
     }
 
     signing {
@@ -231,10 +230,9 @@ tasks {
         register<RunServer>("runServer-$it") {
             dependsOn(getByName("cacheLatestFaweArtifact"))
             minecraftVersion(it)
-            pluginJars(project.files(
-                project(":plotsquared-bukkit").tasks.named<Jar>("shadowJar")
-                .map { it.archiveFile }
-            ))
+            pluginJars(*project(":plotsquared-bukkit").getTasksByName("shadowJar", false)
+                    .map { task -> (task as Jar).archiveFile }
+                    .toTypedArray())
             jvmArgs("-DPaper.IgnoreJavaVersion=true", "-Dcom.mojang.eula.agree=true")
             downloadPlugins {
                 url("https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/artifact/artifacts/${project.ext["faweArtifact"]}")
