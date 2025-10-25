@@ -49,7 +49,6 @@ import com.plotsquared.core.plot.flag.implementations.ExplosionFlag;
 import com.plotsquared.core.plot.flag.implementations.FarewellFlag;
 import com.plotsquared.core.plot.flag.implementations.FeedFlag;
 import com.plotsquared.core.plot.flag.implementations.FishingFlag;
-import com.plotsquared.core.plot.flag.implementations.FlyFlag;
 import com.plotsquared.core.plot.flag.implementations.ForcefieldFlag;
 import com.plotsquared.core.plot.flag.implementations.GamemodeFlag;
 import com.plotsquared.core.plot.flag.implementations.GrassGrowFlag;
@@ -73,7 +72,6 @@ import com.plotsquared.core.plot.flag.implementations.KeepInventoryFlag;
 import com.plotsquared.core.plot.flag.implementations.KelpGrowFlag;
 import com.plotsquared.core.plot.flag.implementations.LeafDecayFlag;
 import com.plotsquared.core.plot.flag.implementations.LecternReadBookFlag;
-import com.plotsquared.core.plot.flag.implementations.LiquidFlowFlag;
 import com.plotsquared.core.plot.flag.implementations.MiscBreakFlag;
 import com.plotsquared.core.plot.flag.implementations.MiscCapFlag;
 import com.plotsquared.core.plot.flag.implementations.MiscInteractFlag;
@@ -88,7 +86,6 @@ import com.plotsquared.core.plot.flag.implementations.NotifyEnterFlag;
 import com.plotsquared.core.plot.flag.implementations.NotifyLeaveFlag;
 import com.plotsquared.core.plot.flag.implementations.PlaceFlag;
 import com.plotsquared.core.plot.flag.implementations.PlayerInteractFlag;
-import com.plotsquared.core.plot.flag.implementations.PlotTitleFlag;
 import com.plotsquared.core.plot.flag.implementations.PreventCreativeCopyFlag;
 import com.plotsquared.core.plot.flag.implementations.PriceFlag;
 import com.plotsquared.core.plot.flag.implementations.ProjectileChangeBlockFlag;
@@ -96,7 +93,6 @@ import com.plotsquared.core.plot.flag.implementations.ProjectilesFlag;
 import com.plotsquared.core.plot.flag.implementations.WeavingDeathPlace;
 import com.plotsquared.core.plot.flag.implementations.PveFlag;
 import com.plotsquared.core.plot.flag.implementations.PvpFlag;
-import com.plotsquared.core.plot.flag.implementations.RedstoneFlag;
 import com.plotsquared.core.plot.flag.implementations.SculkSensorInteractFlag;
 import com.plotsquared.core.plot.flag.implementations.ServerPlotFlag;
 import com.plotsquared.core.plot.flag.implementations.SnowFormFlag;
@@ -106,7 +102,6 @@ import com.plotsquared.core.plot.flag.implementations.TamedAttackFlag;
 import com.plotsquared.core.plot.flag.implementations.TamedInteractFlag;
 import com.plotsquared.core.plot.flag.implementations.TileDropFlag;
 import com.plotsquared.core.plot.flag.implementations.TimeFlag;
-import com.plotsquared.core.plot.flag.implementations.TitlesFlag;
 import com.plotsquared.core.plot.flag.implementations.UntrustedVisitFlag;
 import com.plotsquared.core.plot.flag.implementations.UseFlag;
 import com.plotsquared.core.plot.flag.implementations.VehicleBreakFlag;
@@ -115,7 +110,6 @@ import com.plotsquared.core.plot.flag.implementations.VehiclePlaceFlag;
 import com.plotsquared.core.plot.flag.implementations.VehicleUseFlag;
 import com.plotsquared.core.plot.flag.implementations.VillagerInteractFlag;
 import com.plotsquared.core.plot.flag.implementations.VineGrowFlag;
-import com.plotsquared.core.plot.flag.implementations.WeatherFlag;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collections;
@@ -195,7 +189,6 @@ public final class GlobalFlagContainer extends FlagContainer {
         this.addFlag(ProjectileChangeBlockFlag.PROJECTILE_CHANGE_BLOCK_FALSE);
         this.addFlag(PveFlag.PVE_FALSE);
         this.addFlag(PvpFlag.PVP_FALSE);
-        this.addFlag(RedstoneFlag.REDSTONE_TRUE);
         this.addFlag(ServerPlotFlag.SERVER_PLOT_FALSE);
         this.addFlag(SnowFormFlag.SNOW_FORM_FALSE);
         this.addFlag(SnowMeltFlag.SNOW_MELT_TRUE);
@@ -217,10 +210,6 @@ public final class GlobalFlagContainer extends FlagContainer {
 
         // Enum Flags
         this.addFlag(DenyTeleportFlag.DENY_TELEPORT_FLAG_NONE);
-        this.addFlag(FlyFlag.FLIGHT_FLAG_DEFAULT);
-        this.addFlag(LiquidFlowFlag.LIQUID_FLOW_DEFAULT);
-        this.addFlag(TitlesFlag.TITLES_NONE);
-        this.addFlag(WeatherFlag.PLOT_WEATHER_FLAG_OFF);
 
         // Internal flags
         this.addFlag(new AnalysisFlag(Collections.emptyList()));
@@ -246,7 +235,6 @@ public final class GlobalFlagContainer extends FlagContainer {
         this.addFlag(DescriptionFlag.DESCRIPTION_FLAG_EMPTY);
         this.addFlag(GreetingFlag.GREETING_FLAG_EMPTY);
         this.addFlag(FarewellFlag.FAREWELL_FLAG_EMPTY);
-        this.addFlag(PlotTitleFlag.TITLE_FLAG_DEFAULT);
 
         // Timed flags
         this.addFlag(FeedFlag.FEED_NOTHING);
