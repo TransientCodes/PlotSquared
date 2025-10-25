@@ -1,5 +1,6 @@
 import com.diffplug.gradle.spotless.SpotlessPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.json.JsonSlurper
 import xyz.jpenilla.runpaper.task.RunServer
 
@@ -218,6 +219,43 @@ subprojects {
             isPreserveFileTimestamps = false
             isReproducibleFileOrder = true
         }
+    }
+}
+
+val deployDirProvider = providers.gradleProperty("plotsquared.deployDir")
+    .orElse(providers.environmentVariable("PLOTSQUARED_DEPLOY_DIR"))
+    .orElse(providers.provider { "F:/dev/plugins" })
+
+val bukkitShadowJar = project(":plotsquared-bukkit").tasks.named<ShadowJar>("shadowJar")
+
+tasks.register("deployPlotSquaredJar") {
+    group = "distribution"
+    description = "Deploys the shaded PlotSquared Bukkit jar to a local plugins directory."
+
+    dependsOn(bukkitShadowJar)
+
+    doLast {
+        val deployPath = deployDirProvider.get()
+        val targetDir = File(deployPath)
+        if (!targetDir.exists() || !targetDir.isDirectory) {
+            logger.lifecycle("Skipping deployment because {} does not exist or is not a directory.", targetDir.absolutePath)
+            return@doLast
+        }
+
+        val jarFile = bukkitShadowJar.get().archiveFile.get().asFile
+
+        targetDir.listFiles()?.filter { file ->
+            file.isFile && file.extension.equals("jar", ignoreCase = true) && file.name.contains("plotsquared", ignoreCase = true)
+        }?.forEach { file ->
+            if (file.delete()) {
+                logger.lifecycle("Deleted {}", file.absolutePath)
+            } else {
+                logger.warn("Failed to delete {}", file.absolutePath)
+            }
+        }
+
+        jarFile.copyTo(targetDir.resolve(jarFile.name), overwrite = true)
+        logger.lifecycle("Copied {} to {}", jarFile.absolutePath, targetDir.absolutePath)
     }
 }
 
