@@ -706,7 +706,9 @@ public class HybridUtils {
                         }
                         BiomeType biome = plotWorld.G_SCH_B.get(MathMan.pair(absX, absZ));
                         if (biome != null) {
-                            queue.setBiome(finalX + X + plotWorld.ROAD_OFFSET_X, finalZ + Z + plotWorld.ROAD_OFFSET_Z, biome);
+                            queue.setBiome(finalX + X + plotWorld.ROAD_OFFSET_X,
+                                    finalZ + Z + plotWorld.ROAD_OFFSET_Z,
+                                    biome);
                         } else {
                             queue.setBiome(
                                     finalX + X + plotWorld.ROAD_OFFSET_X,
