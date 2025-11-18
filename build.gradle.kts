@@ -1,6 +1,5 @@
 import com.diffplug.gradle.spotless.SpotlessPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.json.JsonSlurper
 import xyz.jpenilla.runpaper.task.RunServer
 
@@ -21,7 +20,7 @@ plugins {
 }
 
 group = "com.intellectualsites.plotsquared"
-version = "7.5.9-SNAPSHOT"
+version = "7.5.10-SNAPSHOT"
 
 if (!File("$rootDir/.git").exists()) {
     logger.lifecycle("""
@@ -45,29 +44,12 @@ subprojects {
             url = uri("https://jitpack.io")
             content {
                 includeModule("com.github.MilkBowl", "VaultAPI")
-                includeModule("com.github.notKolja", "InjectLib")
             }
         }
 
         maven {
             name = "EngineHub"
             url = uri("https://maven.enginehub.org/repo/")
-        }
-
-        maven {
-            url = uri("https://maven.pkg.github.com/TransientCodes/TransientJobs")
-            credentials {
-                username = project.findProperty("gpr.user") as String?
-                password = project.findProperty("gpr.key") as String?
-            }
-        }
-
-        maven {
-            url = uri("https://maven.pkg.github.com/TransientCodes/TransientPlots")
-            credentials {
-                username = project.findProperty("gpr.user") as String?
-                password = project.findProperty("gpr.key") as String?
-            }
         }
     }
 
@@ -83,13 +65,16 @@ subprojects {
         plugin<IdeaPlugin>()
     }
 
+    configurations.matching { it.name == "signatures" }.configureEach {
+        attributes {
+            attribute(Attribute.of("signatures-unique", String::class.java), "true")
+        }
+    }
+
     dependencies {
         // Tests
-        implementation("gg.kpjm:transientplots:1.1.1")
-        compileOnly("com.github.notKolja:InjectLib:0.1.3")
-        compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.14.0")
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.0")
+        testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
     }
 
     plugins.withId("java") {
@@ -116,9 +101,15 @@ subprojects {
         }
     }
 
-    val javaComponent = components["java"] as AdhocComponentWithVariants
-    javaComponent.withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
-        skip()
+    afterEvaluate {
+        val javaComponent = components["java"] as AdhocComponentWithVariants
+        configurations.findByName("shadowRuntimeElements")?.let { shadowRuntimeElements ->
+            javaComponent.withVariantsFromConfiguration(shadowRuntimeElements) {
+                skip()
+            }
+        } ?: run {
+            logger.warn("Configuration 'shadowRuntimeElements' does not exist.")
+        }
     }
 
     signing {
@@ -220,49 +211,6 @@ subprojects {
         }
     }
 }
-
-val deployDirProvider = providers.gradleProperty("plotsquared.deployDir")
-    .orElse(providers.environmentVariable("PLOTSQUARED_DEPLOY_DIR"))
-    .orElse(providers.provider { "F:/dev/plugins" })
-
-val bukkitShadowJar = project(":plotsquared-bukkit").tasks.named<ShadowJar>("shadowJar")
-
-tasks.register("deployPlotSquaredJar") {
-    group = "distribution"
-    description = "Deploys the shaded PlotSquared Bukkit jar to a local plugins directory."
-
-    dependsOn(bukkitShadowJar)
-
-    doLast {
-        val deployPath = deployDirProvider.get()
-        val targetDir = File(deployPath)
-        if (!targetDir.exists() || !targetDir.isDirectory) {
-            logger.lifecycle("Skipping deployment because {} does not exist or is not a directory.", targetDir.absolutePath)
-            return@doLast
-        }
-
-        val jarFile = bukkitShadowJar.get().archiveFile.get().asFile
-
-        targetDir.listFiles()?.filter { file ->
-            file.isFile && file.extension.equals("jar", ignoreCase = true) && file.name.contains("plotsquared", ignoreCase = true)
-        }?.forEach { file ->
-            if (file.delete()) {
-                logger.lifecycle("Deleted {}", file.absolutePath)
-            } else {
-                logger.warn("Failed to delete {}", file.absolutePath)
-            }
-        }
-
-        jarFile.copyTo(targetDir.resolve(jarFile.name), overwrite = true)
-        logger.lifecycle("Copied {} to {}", jarFile.absolutePath, targetDir.absolutePath)
-    }
-}
-
-tasks.jar {
-    destinationDirectory.set(file("F:/dev/plugins"))
-    archiveFileName.set("PlotSquared.jar")
-}
-
 
 tasks.getByName<Jar>("jar") {
     enabled = false
