@@ -48,6 +48,14 @@ subprojects {
         }
 
         maven {
+            url = uri("https://maven.pkg.github.com/TransientCodes/TransientFarm")
+            credentials {
+                username = project.findProperty("gpr.user") as String?
+                password = project.findProperty("gpr.key") as String?
+            }
+        }
+
+        maven {
             name = "EngineHub"
             url = uri("https://maven.enginehub.org/repo/")
         }
@@ -80,6 +88,7 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
         compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+        compileOnly("gg.kpjm:transientfarm:1.1")
     }
 
     plugins.withId("java") {

@@ -76,6 +76,8 @@ import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -106,6 +108,7 @@ import static com.plotsquared.core.util.entity.EntityCategories.CAP_MISC;
 import static com.plotsquared.core.util.entity.EntityCategories.CAP_MOB;
 import static com.plotsquared.core.util.entity.EntityCategories.CAP_MONSTER;
 import static com.plotsquared.core.util.entity.EntityCategories.CAP_VEHICLE;
+import static gg.kpjm.transientFarm.TransientRandomTeleport.databaseManager;
 
 /**
  * The plot class<br>
@@ -2699,20 +2702,40 @@ public class Plot {
         if (!this.hasOwner()) {
             return false;
         }
+
+        OfflinePlayer owner = Bukkit.getOfflinePlayer(Objects.requireNonNull(this.getOwner()));
+
         if (!isMerged()) {
-            return PlotSquared.platform().playerManager().getPlayerIfExists(Objects.requireNonNull(this.getOwnerAbs())) != null;
+            assert databaseManager != null;
+            return getGlobalOnlinePlayerNames().contains(owner.getName());
         }
         for (final Plot current : getConnectedPlots()) {
             if (current.hasOwner()
-                    && PlotSquared
-                    .platform()
-                    .playerManager()
-                    .getPlayerIfExists(Objects.requireNonNull(current.getOwnerAbs())) != null) {
+                    && getGlobalOnlinePlayerNames()
+                    .contains(owner.getName())) {
                 return true;
             }
         }
         return false;
     }
+
+    public List<String> getGlobalOnlinePlayerNames() {
+        ArrayList<String> arrayList = new ArrayList<>();
+
+        for (String nullableString : databaseManager.getGlobalOnlinePlayers()) {
+            if (nullableString != null) {
+                String cleanString = nullableString
+                        .replace("(citybuild)", "")
+                        .replace("(farmserver)", "")
+                        .trim();
+                arrayList.add(cleanString);
+            }
+        }
+
+        return arrayList;
+    }
+
+
 
     /**
      * Get the maximum distance of the plot from x=0, z=0.
