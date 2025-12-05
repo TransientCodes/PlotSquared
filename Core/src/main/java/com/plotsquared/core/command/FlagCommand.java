@@ -36,6 +36,7 @@ import com.plotsquared.core.plot.flag.InternalFlag;
 import com.plotsquared.core.plot.flag.PlotFlag;
 import com.plotsquared.core.plot.flag.types.IntegerFlag;
 import com.plotsquared.core.plot.flag.types.ListFlag;
+import com.plotsquared.core.plot.flag.types.PermissionBasedBooleanFlag;
 import com.plotsquared.core.util.EventDispatcher;
 import com.plotsquared.core.util.MathMan;
 import com.plotsquared.core.util.StringComparison;
@@ -246,6 +247,9 @@ public final class FlagCommand extends Command {
             RunnableVal3<Command, Runnable, Runnable> confirm,
             RunnableVal2<Command, CommandResult> whenDone
     ) throws CommandException {
+        if (!player.hasPermission("plots.flags.use")) {
+            return CompletableFuture.completedFuture(false);
+        }
         if (args.length == 0 || !Arrays
                 .asList("set", "s", "list", "l", "delete", "remove", "r", "add", "a", "info", "i")
                 .contains(args[0].toLowerCase(Locale.ENGLISH))) {
@@ -342,6 +346,14 @@ public final class FlagCommand extends Command {
         if (plotFlag == null) {
             return;
         }
+
+        if (plotFlag instanceof PermissionBasedBooleanFlag) {
+            if (!player.hasPermission(((PermissionBasedBooleanFlag) plotFlag).getPermission())) {
+                player.sendMessage(TranslatableCaption.of("plots.flag.permission"));
+                return;
+            }
+        }
+
         Plot plot = player.getCurrentPlot();
         PlotFlagAddEvent event = eventDispatcher.callFlagAdd(plotFlag, plot);
         if (event.getEventResult() == Result.DENY) {

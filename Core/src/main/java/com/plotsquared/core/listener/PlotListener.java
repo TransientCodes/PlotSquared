@@ -32,15 +32,12 @@ import com.plotsquared.core.player.PlayerMetaDataKeys;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
-import com.plotsquared.core.plot.PlotTitle;
-import com.plotsquared.core.plot.PlotWeather;
 import com.plotsquared.core.plot.comment.CommentManager;
 import com.plotsquared.core.plot.flag.GlobalFlagContainer;
 import com.plotsquared.core.plot.flag.PlotFlag;
 import com.plotsquared.core.plot.flag.implementations.DenyExitFlag;
 import com.plotsquared.core.plot.flag.implementations.FarewellFlag;
 import com.plotsquared.core.plot.flag.implementations.FeedFlag;
-import com.plotsquared.core.plot.flag.implementations.FlyFlag;
 import com.plotsquared.core.plot.flag.implementations.GamemodeFlag;
 import com.plotsquared.core.plot.flag.implementations.GreetingFlag;
 import com.plotsquared.core.plot.flag.implementations.GuestGamemodeFlag;
@@ -48,17 +45,12 @@ import com.plotsquared.core.plot.flag.implementations.HealFlag;
 import com.plotsquared.core.plot.flag.implementations.MusicFlag;
 import com.plotsquared.core.plot.flag.implementations.NotifyEnterFlag;
 import com.plotsquared.core.plot.flag.implementations.NotifyLeaveFlag;
-import com.plotsquared.core.plot.flag.implementations.PlotTitleFlag;
-import com.plotsquared.core.plot.flag.implementations.ServerPlotFlag;
 import com.plotsquared.core.plot.flag.implementations.TimeFlag;
-import com.plotsquared.core.plot.flag.implementations.TitlesFlag;
-import com.plotsquared.core.plot.flag.implementations.WeatherFlag;
 import com.plotsquared.core.plot.flag.types.TimedFlag;
 import com.plotsquared.core.util.EventDispatcher;
 import com.plotsquared.core.util.task.TaskManager;
 import com.plotsquared.core.util.task.TaskTime;
 import com.sk89q.worldedit.world.gamemode.GameMode;
-import com.sk89q.worldedit.world.gamemode.GameModes;
 import com.sk89q.worldedit.world.item.ItemType;
 import com.sk89q.worldedit.world.item.ItemTypes;
 import net.kyori.adventure.text.Component;
@@ -73,9 +65,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class PlotListener {
 
@@ -164,7 +154,7 @@ public class PlotListener {
         try (final MetaDataAccess<Plot> lastPlot = player.accessTemporaryMetaData(PlayerMetaDataKeys.TEMPORARY_LAST_PLOT)) {
             Plot last = lastPlot.get().orElse(null);
             if ((last != null) && !last.getId().equals(plot.getId())) {
-                plotExit(player, last, plot, plot.getArea());
+                plotExit(player, last);
             }
             if (PlotSquared.platform().expireManager() != null) {
                 PlotSquared.platform().expireManager().handleEntry(player, plot);
@@ -173,14 +163,6 @@ public class PlotListener {
         }
         this.eventDispatcher.callEntry(player, plot);
         if (plot.hasOwner()) {
-            // This will inherit values from PlotArea
-            final TitlesFlag.TitlesFlagValue titlesFlag = plot.getFlag(TitlesFlag.class);
-            final boolean titles;
-            if (titlesFlag == TitlesFlag.TitlesFlagValue.NONE) {
-                titles = Settings.Titles.DISPLAY_TITLES;
-            } else {
-                titles = titlesFlag == TitlesFlag.TitlesFlagValue.TRUE;
-            }
 
             String greeting = plot.getFlag(GreetingFlag.class);
             if (!greeting.isEmpty()) {
@@ -200,20 +182,6 @@ public class PlotListener {
                             notifyPlotOwner(player, plot, owner, caption);
                         }
                     }
-                }
-            }
-
-            final FlyFlag.FlyStatus flyStatus = plot.getFlag(FlyFlag.class);
-            if (!player.hasPermission(Permission.PERMISSION_ADMIN_FLIGHT)) {
-                if (flyStatus != FlyFlag.FlyStatus.DEFAULT) {
-                    boolean flight = player.getFlight();
-                    GameMode gamemode = player.getGameMode();
-                    if (flight != (gamemode == GameModes.CREATIVE || gamemode == GameModes.SPECTATOR)) {
-                        try (final MetaDataAccess<Boolean> metaDataAccess = player.accessPersistentMetaData(PlayerMetaDataKeys.PERSISTENT_FLIGHT)) {
-                            metaDataAccess.set(player.getFlight());
-                        }
-                    }
-                    player.setFlight(flyStatus == FlyFlag.FlyStatus.ENABLED);
                 }
             }
 
@@ -266,8 +234,6 @@ public class PlotListener {
                 }
             }
 
-            player.setWeather(plot.getFlag(WeatherFlag.class));
-
             ItemType musicFlag = plot.getFlag(MusicFlag.class);
 
             try (final MetaDataAccess<Location> musicMeta =
@@ -301,55 +267,6 @@ public class PlotListener {
 
             CommentManager.sendTitle(player, plot);
 
-            if (titles && !player.getAttribute("disabletitles")) {
-                String title;
-                String subtitle;
-                PlotTitle titleFlag = plot.getFlag(PlotTitleFlag.class);
-                boolean fromFlag;
-                if (titleFlag.title() != null && titleFlag.subtitle() != null) {
-                    title = titleFlag.title();
-                    subtitle = titleFlag.subtitle();
-                    fromFlag = true;
-                } else {
-                    title = "";
-                    subtitle = "";
-                    fromFlag = false;
-                }
-                if (fromFlag || !plot.getFlag(ServerPlotFlag.class) || Settings.Titles.DISPLAY_DEFAULT_ON_SERVER_PLOT) {
-                    TaskManager.runTaskLaterAsync(() -> {
-                        Plot lastPlot;
-                        try (final MetaDataAccess<Plot> lastPlotAccess =
-                                     player.accessTemporaryMetaData(PlayerMetaDataKeys.TEMPORARY_LAST_PLOT)) {
-                            lastPlot = lastPlotAccess.get().orElse(null);
-                        }
-                        if ((lastPlot != null) && plot.getId().equals(lastPlot.getId()) && plot.hasOwner()) {
-                            final UUID plotOwner = plot.getOwnerAbs();
-                            Caption header = fromFlag ? StaticCaption.of(title) : TranslatableCaption.of("titles" +
-                                    ".title_entered_plot");
-                            Caption subHeader = fromFlag ? StaticCaption.of(subtitle) : TranslatableCaption.of("titles" +
-                                    ".title_entered_plot_sub");
-
-                            CompletableFuture<TagResolver> future = PlotSquared.platform().playerManager()
-                                    .getUsernameCaption(plotOwner).thenApply(caption -> TagResolver.builder()
-                                            .tag("owner", Tag.inserting(caption.toComponent(player)))
-                                            .tag("plot", Tag.inserting(Component.text(lastPlot.getId().toString())))
-                                            .tag("world", Tag.inserting(Component.text(player.getLocation().getWorldName())))
-                                            .tag("alias", Tag.inserting(Component.text(plot.getAlias())))
-                                            .build()
-                                    );
-
-                            future.whenComplete((tagResolver, throwable) -> {
-                                if (Settings.Titles.TITLES_AS_ACTIONBAR) {
-                                    player.sendActionBar(header, tagResolver);
-                                } else {
-                                    player.sendTitle(header, subHeader, tagResolver);
-                                }
-                            });
-                        }
-                    }, TaskTime.seconds(1L));
-                }
-            }
-
             TimedFlag.Timed<Integer> feed = plot.getFlag(FeedFlag.class);
             if (feed.interval() != 0 && feed.value() != 0) {
                 feedRunnable
@@ -365,12 +282,7 @@ public class PlotListener {
         return true;
     }
 
-    public boolean plotExit(
-            final PlotPlayer<?> player,
-            @NonNull Plot plot,
-            @Nullable Plot nextPlot,
-            @Nullable PlotArea nextArea
-    ) {
+    public boolean plotExit(final PlotPlayer<?> player, Plot plot) {
         try (final MetaDataAccess<Plot> lastPlot = player.accessTemporaryMetaData(PlayerMetaDataKeys.TEMPORARY_LAST_PLOT)) {
             final Plot previous = lastPlot.remove();
 
@@ -387,9 +299,7 @@ public class PlotListener {
             if (plot.hasOwner()) {
                 PlotArea pw = plot.getArea();
                 if (pw == null) {
-                    if (nextPlot == null || nextPlot.getArea() == null) {
-                        return true;
-                    }
+                    return true;
                 }
                 try (final MetaDataAccess<Boolean> kickAccess =
                              player.accessTemporaryMetaData(PlayerMetaDataKeys.TEMPORARY_KICK)) {
@@ -439,43 +349,8 @@ public class PlotListener {
                     }
                 }
 
-                final FlyFlag.FlyStatus flyStatus = plot.getFlag(FlyFlag.class);
-                if (flyStatus != FlyFlag.FlyStatus.DEFAULT) {
-                    try (final MetaDataAccess<Boolean> metaDataAccess = player.accessPersistentMetaData(PlayerMetaDataKeys.PERSISTENT_FLIGHT)) {
-                        final Optional<Boolean> value = metaDataAccess.get();
-                        if (value.isPresent()) {
-                            player.setFlight(value.get());
-                            metaDataAccess.remove();
-                        } else {
-                            FlyFlag.FlyStatus flight = FlyFlag.FlyStatus.DEFAULT;
-                            if (nextPlot != null) {
-                                flight = nextPlot.getFlag(FlyFlag.class);
-                            } else if (nextArea != null) {
-                                if (nextArea.isRoadFlags()) {
-                                    flight = nextArea.getRoadFlag(FlyFlag.class);
-                                } else {
-                                    flight = nextArea.getFlag(FlyFlag.class);
-                                }
-                            }
-                            if (flight != FlyFlag.FlyStatus.ENABLED) {
-                                GameMode gameMode = player.getGameMode();
-                                if (gameMode == GameModes.SURVIVAL || gameMode == GameModes.ADVENTURE) {
-                                    player.setFlight(false);
-                                } else if (!player.getFlight()) {
-                                    player.setFlight(true);
-                                }
-                            }
-                        }
-                    }
-                }
-
                 if (plot.getFlag(TimeFlag.class) != TimeFlag.TIME_DISABLED.getValue().longValue()) {
                     player.setTime(Long.MAX_VALUE);
-                }
-
-                final PlotWeather plotWeather = plot.getFlag(WeatherFlag.class);
-                if (plotWeather != PlotWeather.OFF) {
-                    player.setWeather(PlotWeather.WORLD);
                 }
 
                 try (final MetaDataAccess<Location> musicAccess =

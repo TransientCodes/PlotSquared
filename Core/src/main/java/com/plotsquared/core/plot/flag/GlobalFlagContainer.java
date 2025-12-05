@@ -72,6 +72,7 @@ import com.plotsquared.core.plot.flag.implementations.KeepInventoryFlag;
 import com.plotsquared.core.plot.flag.implementations.KelpGrowFlag;
 import com.plotsquared.core.plot.flag.implementations.LeafDecayFlag;
 import com.plotsquared.core.plot.flag.implementations.LecternReadBookFlag;
+import com.plotsquared.core.plot.flag.implementations.LiquidFlowFlag;
 import com.plotsquared.core.plot.flag.implementations.MiscBreakFlag;
 import com.plotsquared.core.plot.flag.implementations.MiscCapFlag;
 import com.plotsquared.core.plot.flag.implementations.MiscInteractFlag;
@@ -90,6 +91,7 @@ import com.plotsquared.core.plot.flag.implementations.PreventCreativeCopyFlag;
 import com.plotsquared.core.plot.flag.implementations.PriceFlag;
 import com.plotsquared.core.plot.flag.implementations.ProjectileChangeBlockFlag;
 import com.plotsquared.core.plot.flag.implementations.ProjectilesFlag;
+import com.plotsquared.core.plot.flag.implementations.RedstoneFlag;
 import com.plotsquared.core.plot.flag.implementations.WeavingDeathPlace;
 import com.plotsquared.core.plot.flag.implementations.PveFlag;
 import com.plotsquared.core.plot.flag.implementations.PvpFlag;
@@ -135,6 +137,9 @@ public final class GlobalFlagContainer extends FlagContainer {
         this.addFlag(BreakFlag.BREAK_NONE);
         this.addFlag(UseFlag.USE_NONE);
         this.addFlag(PlaceFlag.PLACE_NONE);
+
+        this.addFlag(RedstoneFlag.REDSTONE_FALSE);
+        this.addFlag(LiquidFlowFlag.LIQUID_FLOW_DEFAULT);
 
         // Boolean flags
         this.addFlag(AnimalAttackFlag.ANIMAL_ATTACK_FALSE);

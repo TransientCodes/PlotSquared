@@ -24,7 +24,6 @@ import com.plotsquared.core.plot.flag.PlotFlag;
 import com.plotsquared.core.plot.flag.implementations.DescriptionFlag;
 import com.plotsquared.core.plot.flag.implementations.FarewellFlag;
 import com.plotsquared.core.plot.flag.implementations.GreetingFlag;
-import com.plotsquared.core.plot.flag.implementations.PlotTitleFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -46,8 +45,7 @@ public class CaptionUtility {
     private static final Set<Class<? extends PlotFlag<?, ?>>> MINI_MESSAGE_FLAGS = Set.of(
             GreetingFlag.class,
             FarewellFlag.class,
-            DescriptionFlag.class,
-            PlotTitleFlag.class
+            DescriptionFlag.class
     );
 
     private static final ComponentTransform CLICK_STRIP_TRANSFORM = nested(
