@@ -138,72 +138,28 @@ subprojects {
 
     mavenPublishing {
         coordinates(
-            groupId = "$group",
-            artifactId = project.name,
-            version = "${project.version}",
+                groupId = group.toString(),
+                artifactId = project.name,
+                version = version.toString()
         )
 
         pom {
             name.set(project.name)
             description.set("PlotSquared, a land and world management plugin for Minecraft.")
-            url.set("https://github.com/IntellectualSites/PlotSquared")
+            url.set("https://github.com/TransientCodes/PlotSquared")
+        }
 
-            licenses {
-                license {
-                    name.set("GNU General Public License, Version 3.0")
-                    url.set("https://www.gnu.org/licenses/gpl-3.0.html")
-                    distribution.set("repo")
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/TransientCodes/PlotSquared")
+                credentials {
+                    username = project.findProperty("gpr.user") as String?
+                            ?: System.getenv("GITHUB_ACTOR")
+                    password = project.findProperty("gpr.key") as String?
+                            ?: System.getenv("GITHUB_TOKEN")
                 }
             }
-
-            developers {
-                developer {
-                    id.set("Sauilitired")
-                    name.set("Alexander Söderberg")
-                    organization.set("IntellectualSites")
-                    organizationUrl.set("https://github.com/IntellectualSites")
-                }
-                developer {
-                    id.set("NotMyFault")
-                    name.set("Alexander Brandes")
-                    organization.set("IntellectualSites")
-                    organizationUrl.set("https://github.com/IntellectualSites")
-                    email.set("contact(at)notmyfault.dev")
-                }
-                developer {
-                    id.set("kpjm")
-                    name.set("Kolja Menzel")
-                    organization.set("TransientCodes")
-                    organizationUrl.set("https://github.com/TransientCodes")
-                    email.set("buissines(at)transientcodes.de")
-                }
-                developer {
-                    id.set("SirYwell")
-                    name.set("Hannes Greule")
-                    organization.set("IntellectualSites")
-                    organizationUrl.set("https://github.com/IntellectualSites")
-                }
-                developer {
-                    id.set("dordsor21")
-                    name.set("dordsor21")
-                    organization.set("IntellectualSites")
-                    organizationUrl.set("https://github.com/IntellectualSites")
-                }
-            }
-
-            scm {
-                url.set("https://github.com/IntellectualSites/PlotSquared")
-                connection.set("scm:git:https://github.com/IntellectualSites/PlotSquared.git")
-                developerConnection.set("scm:git:git@github.com:IntellectualSites/PlotSquared.git")
-                tag.set("${project.version}")
-            }
-
-            issueManagement {
-                system.set("GitHub")
-                url.set("https://github.com/IntellectualSites/PlotSquared/issues")
-            }
-
-            publishToMavenCentral()
         }
     }
 
@@ -232,6 +188,16 @@ subprojects {
         }
     }
 }
+
+tasks.named("publish") {
+    dependsOn(
+            subprojects.mapNotNull { sub ->
+                sub.tasks.findByName("publishAllPublicationsToGitHubPackagesRepository")
+            }
+    )
+}
+
+
 
 tasks.getByName<Jar>("jar") {
     enabled = false

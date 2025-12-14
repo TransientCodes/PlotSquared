@@ -42,6 +42,7 @@ import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.PlotAreaType;
 import com.plotsquared.core.plot.flag.FlagContainer;
 import com.plotsquared.core.plot.flag.implementations.BeaconEffectsFlag;
+import com.plotsquared.core.plot.flag.implementations.BreedingFlag;
 import com.plotsquared.core.plot.flag.implementations.DoneFlag;
 import com.plotsquared.core.plot.flag.implementations.FishingFlag;
 import com.plotsquared.core.plot.flag.implementations.ProjectilesFlag;
@@ -214,7 +215,21 @@ public class PaperListener implements Listener {
                 }
             }
             case "BREEDING" -> {
-                if (!area.isSpawnBreeding()) {
+                Location plotLocation = Location.at(
+                        location.getWorld(),
+                        location.getX(),
+                        location.getY(),
+                        location.getZ()
+                );
+
+                Plot currentPlot = area.getPlot(plotLocation);
+
+                if (currentPlot == null) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                if (!currentPlot.getFlag(BreedingFlag.class)) {
                     event.setShouldAbortSpawn(true);
                     event.setCancelled(true);
                     return;

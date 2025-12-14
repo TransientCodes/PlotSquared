@@ -32,6 +32,7 @@ import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.PlotHandler;
+import com.plotsquared.core.plot.flag.implementations.BreedingFlag;
 import com.plotsquared.core.plot.flag.implementations.DisablePhysicsFlag;
 import com.plotsquared.core.plot.flag.implementations.EntityChangeBlockFlag;
 import com.plotsquared.core.plot.flag.implementations.ExplosionFlag;
@@ -169,7 +170,21 @@ public class EntityEventListener implements Listener {
                 }
             }
             case "BREEDING", "DUPLICATION" -> {
-                if (!area.isSpawnBreeding()) {
+                Location plotLocation = Location.at(
+                        location.getWorld(),
+                        location.getX(),
+                        location.getY(),
+                        location.getZ()
+                );
+
+                Plot currentPlot = area.getPlot(plotLocation);
+
+                if (currentPlot == null) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                if (!currentPlot.getFlag(BreedingFlag.class)) {
                     event.setCancelled(true);
                     return;
                 }
