@@ -27,6 +27,9 @@ public class VehicleCapFlag extends NonNegativeIntegerFlag<VehicleCapFlag> {
     public static final VehicleCapFlag VEHICLE_CAP_UNLIMITED =
             new VehicleCapFlag(Integer.MAX_VALUE);
 
+    public static final VehicleCapFlag VEHICLE_CAP_DEFAULT =
+            new VehicleCapFlag(50);
+
     protected VehicleCapFlag(int value) {
         super(value, TranslatableCaption.of("flags.flag_description_vehicle_cap"));
     }

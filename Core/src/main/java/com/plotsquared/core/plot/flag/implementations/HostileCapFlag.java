@@ -27,6 +27,9 @@ public class HostileCapFlag extends NonNegativeIntegerFlag<HostileCapFlag> {
     public static final HostileCapFlag HOSTILE_CAP_UNLIMITED =
             new HostileCapFlag(Integer.MAX_VALUE);
 
+    public static final HostileCapFlag HOSTILE_CAP_DEFAULT =
+            new HostileCapFlag(75);
+
     protected HostileCapFlag(int value) {
         super(value, TranslatableCaption.of("flags.flag_description_hostile_cap"));
     }

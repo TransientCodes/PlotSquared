@@ -110,6 +110,13 @@ public class HighFreqBlockEventListener implements Listener {
             plot.debug("Redstone event was cancelled because redstone = false");
             return;
         }
+
+        if (Bukkit.getServer().getTPS()[0] <= 15.0) {
+            event.setNewCurrent(0);
+            plot.debug("Redstone Event was cancelled because TPS was under 15 average");
+            return;
+        }
+
         if (Settings.Redstone.DISABLE_OFFLINE) {
             boolean disable = false;
             if (!DBFunc.SERVER.equals(plot.getOwner())) {

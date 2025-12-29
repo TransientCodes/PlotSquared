@@ -372,8 +372,8 @@ public class BukkitEntityUtil {
 
         if (EntityCategories.PROJECTILE.contains(entityType) || EntityCategories.OTHER
                 .contains(entityType) || EntityCategories.HANGING.contains(entityType)) {
-            return EntityUtil.checkEntity(plot, EntityCapFlag.ENTITY_CAP_UNLIMITED,
-                    MiscCapFlag.MISC_CAP_UNLIMITED
+            return EntityUtil.checkEntity(plot, EntityCapFlag.ENTITY_CAP_DEFAULT,
+                    MiscCapFlag.MISC_CAP_DEFAULT
             );
         }
 
@@ -382,25 +382,25 @@ public class BukkitEntityUtil {
         if (EntityCategories.ANIMAL.contains(entityType) || EntityCategories.VILLAGER
                 .contains(entityType) || EntityCategories.TAMEABLE.contains(entityType)) {
             return EntityUtil
-                    .checkEntity(plot, EntityCapFlag.ENTITY_CAP_UNLIMITED, MobCapFlag.MOB_CAP_UNLIMITED,
-                            AnimalCapFlag.ANIMAL_CAP_UNLIMITED
+                    .checkEntity(plot, EntityCapFlag.ENTITY_CAP_DEFAULT, MobCapFlag.MOB_CAP_DEFAULT,
+                            AnimalCapFlag.ANIMAL_CAP_FLAG_DEFAULT
                     );
         }
 
         if (EntityCategories.HOSTILE.contains(entityType)) {
             return EntityUtil
-                    .checkEntity(plot, EntityCapFlag.ENTITY_CAP_UNLIMITED, MobCapFlag.MOB_CAP_UNLIMITED,
-                            HostileCapFlag.HOSTILE_CAP_UNLIMITED
+                    .checkEntity(plot, EntityCapFlag.ENTITY_CAP_DEFAULT, MobCapFlag.MOB_CAP_DEFAULT,
+                            HostileCapFlag.HOSTILE_CAP_DEFAULT
                     );
         }
 
         if (EntityCategories.VEHICLE.contains(entityType)) {
-            return EntityUtil.checkEntity(plot, EntityCapFlag.ENTITY_CAP_UNLIMITED,
-                    VehicleCapFlag.VEHICLE_CAP_UNLIMITED
+            return EntityUtil.checkEntity(plot, EntityCapFlag.ENTITY_CAP_DEFAULT,
+                    VehicleCapFlag.VEHICLE_CAP_DEFAULT
             );
         }
 
-        return EntityUtil.checkEntity(plot, EntityCapFlag.ENTITY_CAP_UNLIMITED);
+        return EntityUtil.checkEntity(plot, EntityCapFlag.ENTITY_CAP_DEFAULT);
     }
 
 }

@@ -25,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class MobCapFlag extends NonNegativeIntegerFlag<MobCapFlag> {
 
     public static final MobCapFlag MOB_CAP_UNLIMITED = new MobCapFlag(Integer.MAX_VALUE);
+    public static final MobCapFlag MOB_CAP_DEFAULT = new MobCapFlag(100);
 
     protected MobCapFlag(int value) {
         super(value, TranslatableCaption.of("flags.flag_description_mob_cap"));

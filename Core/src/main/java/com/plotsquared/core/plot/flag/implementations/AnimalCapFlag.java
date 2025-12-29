@@ -25,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class AnimalCapFlag extends NonNegativeIntegerFlag<AnimalCapFlag> {
 
     public static final AnimalCapFlag ANIMAL_CAP_UNLIMITED = new AnimalCapFlag(Integer.MAX_VALUE);
+    public static final AnimalCapFlag ANIMAL_CAP_FLAG_DEFAULT = new AnimalCapFlag(100);
 
     protected AnimalCapFlag(int value) {
         super(value, TranslatableCaption.of("flags.flag_description_animal_cap"));

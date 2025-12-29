@@ -20,15 +20,16 @@ plugins {
 }
 
 group = "com.intellectualsites.plotsquared"
-version = "7.5.10-SNAPSHOT"
+version = "7.5.12-SNAPSHOT"
 
 if (!File("$rootDir/.git").exists()) {
-    logger.lifecycle("""
-    **************************************************************************************
-    You need to fork and clone this repository! Don't download a .zip file.
-    If you need assistance, consult the GitHub docs: https://docs.github.com/get-started/quickstart/fork-a-repo
-    **************************************************************************************
-    """.trimIndent()
+    logger.lifecycle(
+            """
+        **************************************************************************************
+        You need to fork and clone this repository! Don't download a .zip file.
+        If you need assistance, consult the GitHub docs: https://docs.github.com/get-started/quickstart/fork-a-repo
+        **************************************************************************************
+        """.trimIndent()
     ).also { kotlin.system.exitProcess(1) }
 }
 
@@ -84,7 +85,6 @@ subprojects {
     }
 
     dependencies {
-        // Tests
         testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
         compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
@@ -127,28 +127,84 @@ subprojects {
     }
 
     signing {
-        if (!project.hasProperty("skip.signing") && !version.toString().endsWith("-SNAPSHOT")) {
+        if (!version.toString().endsWith("-SNAPSHOT")) {
             val signingKey: String? by project
             val signingPassword: String? by project
             useInMemoryPgpKeys(signingKey, signingPassword)
-            signing.isRequired
             sign(publishing.publications)
         }
     }
 
     mavenPublishing {
         coordinates(
-                groupId = group.toString(),
+                groupId = "$group",
                 artifactId = project.name,
-                version = version.toString()
+                version = "${project.version}",
         )
 
         pom {
             name.set(project.name)
             description.set("PlotSquared, a land and world management plugin for Minecraft.")
             url.set("https://github.com/TransientCodes/PlotSquared")
-        }
 
+            licenses {
+                license {
+                    name.set("GNU General Public License, Version 3.0")
+                    url.set("https://www.gnu.org/licenses/gpl-3.0.html")
+                    distribution.set("repo")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("Sauilitired")
+                    name.set("Alexander Söderberg")
+                    organization.set("IntellectualSites")
+                    organizationUrl.set("https://github.com/IntellectualSites")
+                }
+                developer {
+                    id.set("NotMyFault")
+                    name.set("Alexander Brandes")
+                    organization.set("IntellectualSites")
+                    organizationUrl.set("https://github.com/IntellectualSites")
+                    email.set("contact(at)notmyfault.dev")
+                }
+                developer {
+                    id.set("kpjm")
+                    name.set("Kolja Menzel")
+                    organization.set("TransientCodes")
+                    organizationUrl.set("https://github.com/TransientCodes")
+                    email.set("buissines(at)transientcodes.de")
+                }
+                developer {
+                    id.set("SirYwell")
+                    name.set("Hannes Greule")
+                    organization.set("IntellectualSites")
+                    organizationUrl.set("https://github.com/IntellectualSites")
+                }
+                developer {
+                    id.set("dordsor21")
+                    name.set("dordsor21")
+                    organization.set("IntellectualSites")
+                    organizationUrl.set("https://github.com/IntellectualSites")
+                }
+            }
+
+            scm {
+                url.set("https://github.com/TransientCodes/PlotSquared")
+                connection.set("scm:git:https://github.com/TransientCodes/PlotSquared.git")
+                developerConnection.set("scm:git:git@github.com:TransientCodes/PlotSquared.git")
+                tag.set("${project.version}")
+            }
+
+            issueManagement {
+                system.set("GitHub")
+                url.set("https://github.com/IntellectualSites/PlotSquared/issues")
+            }
+        }
+    }
+
+    publishing {
         repositories {
             maven {
                 name = "GitHubPackages"
@@ -164,20 +220,20 @@ subprojects {
     }
 
     tasks {
-
         compileJava {
             options.compilerArgs.add("-parameters")
             options.encoding = "UTF-8"
         }
 
         shadowJar {
-            this.archiveClassifier.set(null as String?)
-            this.archiveFileName.set("${project.name}-${project.version}.${this.archiveExtension.getOrElse("jar")}")
+            archiveClassifier.set(null as String?)
+            archiveFileName.set("${project.name}-${project.version}.${archiveExtension.getOrElse("jar")}")
         }
 
         named("build") {
             dependsOn(named("shadowJar"))
         }
+
         test {
             useJUnitPlatform()
         }
@@ -189,28 +245,34 @@ subprojects {
     }
 }
 
-tasks.named("publish") {
-    dependsOn(
-            subprojects.mapNotNull { sub ->
-                sub.tasks.findByName("publishAllPublicationsToGitHubPackagesRepository")
-            }
-    )
-}
-
-
-
 tasks.getByName<Jar>("jar") {
     enabled = false
 }
 
-val supportedVersions = listOf("1.19.4", "1.20.6", "1.21.1", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8")
+val supportedVersions = listOf(
+        "1.19.4",
+        "1.20.6",
+        "1.21.1",
+        "1.21.3",
+        "1.21.4",
+        "1.21.5",
+        "1.21.6",
+        "1.21.7",
+        "1.21.8",
+)
+
 tasks {
     register("cacheLatestFaweArtifact") {
-        val lastSuccessfulBuildUrl = uri("https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/api/json").toURL()
-        val artifact = ((JsonSlurper().parse(lastSuccessfulBuildUrl) as Map<*, *>)["artifacts"] as List<*>)
+        val lastSuccessfulBuildUrl = uri(
+                "https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/api/json"
+        ).toURL()
+
+        val artifact = ((JsonSlurper().parse(lastSuccessfulBuildUrl) as Map<*, *>)
+        ["artifacts"] as List<*>)
                 .map { it as Map<*, *> }
                 .map { it["fileName"] as String }
-                .first { it -> it.contains("Paper") }
+                .first { it.contains("Paper") }
+
         project.ext["faweArtifact"] = artifact
     }
 
@@ -218,12 +280,21 @@ tasks {
         register<RunServer>("runServer-$it") {
             dependsOn(getByName("cacheLatestFaweArtifact"))
             minecraftVersion(it)
-            pluginJars(*project(":plotsquared-bukkit").getTasksByName("shadowJar", false)
-                    .map { task -> (task as Jar).archiveFile }
-                    .toTypedArray())
-            jvmArgs("-DPaper.IgnoreJavaVersion=true", "-Dcom.mojang.eula.agree=true")
+            pluginJars(
+                    *project(":plotsquared-bukkit")
+                            .getTasksByName("shadowJar", false)
+                            .map { task -> (task as Jar).archiveFile }
+                            .toTypedArray()
+            )
+            jvmArgs(
+                    "-DPaper.IgnoreJavaVersion=true",
+                    "-Dcom.mojang.eula.agree=true",
+            )
             downloadPlugins {
-                url("https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/artifact/artifacts/${project.ext["faweArtifact"]}")
+                url(
+                        "https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/" +
+                                "artifact/artifacts/${project.ext["faweArtifact"]}"
+                )
             }
             group = "run paper"
             runDirectory.set(file("run-$it"))

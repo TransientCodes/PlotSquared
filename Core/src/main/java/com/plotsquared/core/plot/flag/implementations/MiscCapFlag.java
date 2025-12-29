@@ -25,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class MiscCapFlag extends NonNegativeIntegerFlag<MiscCapFlag> {
 
     public static final MiscCapFlag MISC_CAP_UNLIMITED = new MiscCapFlag(Integer.MAX_VALUE);
+    public static final MiscCapFlag MISC_CAP_DEFAULT = new MiscCapFlag(150);
 
     protected MiscCapFlag(int value) {
         super(value, TranslatableCaption.of("flags.flag_description_misc_cap"));

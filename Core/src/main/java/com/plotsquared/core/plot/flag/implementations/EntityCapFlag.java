@@ -25,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class EntityCapFlag extends NonNegativeIntegerFlag<EntityCapFlag> {
 
     public static final EntityCapFlag ENTITY_CAP_UNLIMITED = new EntityCapFlag(Integer.MAX_VALUE);
+    public static final EntityCapFlag ENTITY_CAP_DEFAULT = new EntityCapFlag(200);
 
     protected EntityCapFlag(int value) {
         super(value, TranslatableCaption.of("flags.flag_description_entity_cap"));

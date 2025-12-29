@@ -139,7 +139,7 @@ public final class GlobalFlagContainer extends FlagContainer {
         this.addFlag(UseFlag.USE_NONE);
         this.addFlag(PlaceFlag.PLACE_NONE);
 
-        this.addFlag(RedstoneFlag.REDSTONE_FALSE);
+        this.addFlag(RedstoneFlag.REDSTONE_TRUE);
         this.addFlag(LiquidFlowFlag.LIQUID_FLOW_DEFAULT);
 
         // Boolean flags
@@ -152,7 +152,7 @@ public final class GlobalFlagContainer extends FlagContainer {
         this.addFlag(BreedingFlag.BREEDING_FALSE);
         this.addFlag(ConcreteHardenFlag.CONCRETE_HARDEN_TRUE);
         this.addFlag(CopperOxideFlag.COPPER_OXIDE_FALSE);
-        this.addFlag(CoralDryFlag.CORAL_DRY_FALSE);
+        this.addFlag(CoralDryFlag.CORAL_DRY_TRUE);
         this.addFlag(CropGrowFlag.CROP_GROW_TRUE);
         this.addFlag(DenyExitFlag.DENY_EXIT_FLAG_FALSE);
         this.addFlag(DenyPortalsFlag.DENY_PORTALS_FALSE);
@@ -199,7 +199,7 @@ public final class GlobalFlagContainer extends FlagContainer {
         this.addFlag(ServerPlotFlag.SERVER_PLOT_FALSE);
         this.addFlag(SnowFormFlag.SNOW_FORM_FALSE);
         this.addFlag(SnowMeltFlag.SNOW_MELT_TRUE);
-        this.addFlag(SoilDryFlag.SOIL_DRY_FALSE);
+        this.addFlag(SoilDryFlag.SOIL_DRY_TRUE);
         this.addFlag(TamedAttackFlag.TAMED_ATTACK_FALSE);
         this.addFlag(TamedInteractFlag.TAMED_INTERACT_FALSE);
         this.addFlag(TileDropFlag.TILE_DROP_TRUE);
@@ -223,13 +223,13 @@ public final class GlobalFlagContainer extends FlagContainer {
         this.addFlag(new DoneFlag(""));
 
         // Integer flags
-        this.addFlag(AnimalCapFlag.ANIMAL_CAP_UNLIMITED);
-        this.addFlag(EntityCapFlag.ENTITY_CAP_UNLIMITED);
-        this.addFlag(HostileCapFlag.HOSTILE_CAP_UNLIMITED);
-        this.addFlag(MiscCapFlag.MISC_CAP_UNLIMITED);
-        this.addFlag(MobCapFlag.MOB_CAP_UNLIMITED);
+        this.addFlag(AnimalCapFlag.ANIMAL_CAP_FLAG_DEFAULT);
+        this.addFlag(EntityCapFlag.ENTITY_CAP_DEFAULT);
+        this.addFlag(HostileCapFlag.HOSTILE_CAP_DEFAULT);
+        this.addFlag(MiscCapFlag.MISC_CAP_DEFAULT);
+        this.addFlag(MobCapFlag.MOB_CAP_DEFAULT);
         this.addFlag(TimeFlag.TIME_DISABLED);
-        this.addFlag(VehicleCapFlag.VEHICLE_CAP_UNLIMITED);
+        this.addFlag(VehicleCapFlag.VEHICLE_CAP_DEFAULT);
 
         // Misc
         this.addFlag(BlockedCmdsFlag.BLOCKED_CMDS_FLAG_NONE);
