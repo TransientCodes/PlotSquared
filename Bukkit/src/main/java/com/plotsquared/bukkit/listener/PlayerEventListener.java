@@ -282,11 +282,7 @@ public class PlayerEventListener implements Listener {
                 "LIGHT_BLUE_CANDLE_CAKE", "YELLOW_CANDLE_CAKE", "LIME_CANDLE_CAKE", "PINK_CANDLE_CAKE", "GRAY_CANDLE_CAKE",
                 "LIGHT_GRAY_CANDLE_CAKE", "CYAN_CANDLE_CAKE", "PURPLE_CANDLE_CAKE", "BLUE_CANDLE_CAKE", "BROWN_CANDLE_CAKE",
                 "GREEN_CANDLE_CAKE", "RED_CANDLE_CAKE", "BLACK_CANDLE_CAKE", "CAVE_VINES", "CAVE_VINES_PLANT",
-                "POTTED_AZALEA_BUSH", "POTTED_FLOWERING_AZALEA_BUSH", "COPPER_CHEST",
-                "EXPOSED_COPPER_CHEST",
-                "WEATHERED_COPPER_CHEST",
-                "OXIDIZED_COPPER_CHEST",
-                "WAXED_COPPER_CHEST",
+                "POTTED_AZALEA_BUSH", "POTTED_FLOWERING_AZALEA_BUSH", "WAXED_COPPER_CHEST",
                 "WAXED_EXPOSED_COPPER_CHEST",
                 "WAXED_WEATHERED_COPPER_CHEST",
                 "WAXED_OXIDIZED_COPPER_CHEST"
@@ -1286,9 +1282,16 @@ public class PlayerEventListener implements Listener {
                 eventType = PlayerBlockEventType.INTERACT_BLOCK;
                 blocktype1 = BukkitAdapter.asBlockType(block.getType());
 
-                if (INTERACTABLE_MATERIALS != null
+                boolean isInteractable = INTERACTABLE_MATERIALS != null
                         ? INTERACTABLE_MATERIALS.contains(blockType.name())
-                        : blockType.isInteractable()) {
+                        : blockType.isInteractable();
+
+                // Allow opening unwaxed copper chests without trust
+                if (isInteractable && blockType.name().endsWith("COPPER_CHEST") && !blockType.name().startsWith("WAXED_")) {
+                    isInteractable = false;
+                }
+
+                if (isInteractable) {
                     if (!player.isSneaking()) {
                         break;
                     }
