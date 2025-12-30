@@ -1286,9 +1286,16 @@ public class PlayerEventListener implements Listener {
                 eventType = PlayerBlockEventType.INTERACT_BLOCK;
                 blocktype1 = BukkitAdapter.asBlockType(block.getType());
 
-                if (INTERACTABLE_MATERIALS != null
+                boolean isInteractable = INTERACTABLE_MATERIALS != null
                         ? INTERACTABLE_MATERIALS.contains(blockType.name())
-                        : blockType.isInteractable()) {
+                        : blockType.isInteractable();
+
+                // Force protection for copper chests if not already detected as interactable (due to Spigot bug)
+                if (!isInteractable && blockType.name().endsWith("COPPER_CHEST")) {
+                    isInteractable = true;
+                }
+
+                if (isInteractable) {
                     if (!player.isSneaking()) {
                         break;
                     }
