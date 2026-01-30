@@ -23,13 +23,12 @@ group = "com.intellectualsites.plotsquared"
 version = "7.5.12-SNAPSHOT"
 
 if (!File("$rootDir/.git").exists()) {
-    logger.lifecycle(
-            """
-        **************************************************************************************
-        You need to fork and clone this repository! Don't download a .zip file.
-        If you need assistance, consult the GitHub docs: https://docs.github.com/get-started/quickstart/fork-a-repo
-        **************************************************************************************
-        """.trimIndent()
+    logger.lifecycle("""
+    **************************************************************************************
+    You need to fork and clone this repository! Don't download a .zip file.
+    If you need assistance, consult the GitHub docs: https://docs.github.com/get-started/quickstart/fork-a-repo
+    **************************************************************************************
+    """.trimIndent()
     ).also { kotlin.system.exitProcess(1) }
 }
 
@@ -89,6 +88,9 @@ subprojects {
         testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
         compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
         compileOnly("gg.kpjm:transientfarm:1.1")
+        // Tests
+        testImplementation("org.junit.jupiter:junit-jupiter:6.0.2")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
     }
 
     plugins.withId("java") {
@@ -127,10 +129,11 @@ subprojects {
     }
 
     signing {
-        if (!version.toString().endsWith("-SNAPSHOT")) {
+        if (!project.hasProperty("skip.signing") && !version.toString().endsWith("-SNAPSHOT")) {
             val signingKey: String? by project
             val signingPassword: String? by project
             useInMemoryPgpKeys(signingKey, signingPassword)
+            signing.isRequired
             sign(publishing.publications)
         }
     }
@@ -201,103 +204,79 @@ subprojects {
                 system.set("GitHub")
                 url.set("https://github.com/IntellectualSites/PlotSquared/issues")
             }
-        }
-    }
 
-    publishing {
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/TransientCodes/PlotSquared")
-                credentials {
-                    username = project.findProperty("gpr.user") as String?
-                            ?: System.getenv("GITHUB_ACTOR")
-                    password = project.findProperty("gpr.key") as String?
-                            ?: System.getenv("GITHUB_TOKEN")
+            publishing {
+                repositories {
+                    maven {
+                        name = "GitHubPackages"
+                        url = uri("https://maven.pkg.github.com/TransientCodes/PlotSquared")
+                        credentials {
+                            username = project.findProperty("gpr.user") as String?
+                                    ?: System.getenv("GITHUB_ACTOR")
+                            password = project.findProperty("gpr.key") as String?
+                                    ?: System.getenv("GITHUB_TOKEN")
+                        }
+                    }
+                }
+            }
+
+            tasks {
+
+                compileJava {
+                    options.compilerArgs.add("-parameters")
+                    options.encoding = "UTF-8"
+                }
+
+                shadowJar {
+                    this.archiveClassifier.set(null as String?)
+                    this.archiveFileName.set("${project.name}-${project.version}.${this.archiveExtension.getOrElse("jar")}")
+                }
+
+                named("build") {
+                    dependsOn(named("shadowJar"))
+                }
+                test {
+                    useJUnitPlatform()
+                }
+
+                withType<AbstractArchiveTask>().configureEach {
+                    isPreserveFileTimestamps = false
+                    isReproducibleFileOrder = true
                 }
             }
         }
-    }
 
-    tasks {
-        compileJava {
-            options.compilerArgs.add("-parameters")
-            options.encoding = "UTF-8"
+        tasks.getByName<Jar>("jar") {
+            enabled = false
         }
 
-        shadowJar {
-            archiveClassifier.set(null as String?)
-            archiveFileName.set("${project.name}-${project.version}.${archiveExtension.getOrElse("jar")}")
-        }
-
-        named("build") {
-            dependsOn(named("shadowJar"))
-        }
-
-        test {
-            useJUnitPlatform()
-        }
-
-        withType<AbstractArchiveTask>().configureEach {
-            isPreserveFileTimestamps = false
-            isReproducibleFileOrder = true
-        }
-    }
-}
-
-tasks.getByName<Jar>("jar") {
-    enabled = false
-}
-
-val supportedVersions = listOf(
-        "1.19.4",
-        "1.20.6",
-        "1.21.1",
-        "1.21.3",
-        "1.21.4",
-        "1.21.5",
-        "1.21.6",
-        "1.21.7",
-        "1.21.8",
-)
-
-tasks {
-    register("cacheLatestFaweArtifact") {
-        val lastSuccessfulBuildUrl = uri(
-                "https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/api/json"
-        ).toURL()
-
-        val artifact = ((JsonSlurper().parse(lastSuccessfulBuildUrl) as Map<*, *>)
-        ["artifacts"] as List<*>)
-                .map { it as Map<*, *> }
-                .map { it["fileName"] as String }
-                .first { it.contains("Paper") }
-
-        project.ext["faweArtifact"] = artifact
-    }
-
-    supportedVersions.forEach {
-        register<RunServer>("runServer-$it") {
-            dependsOn(getByName("cacheLatestFaweArtifact"))
-            minecraftVersion(it)
-            pluginJars(
-                    *project(":plotsquared-bukkit")
-                            .getTasksByName("shadowJar", false)
-                            .map { task -> (task as Jar).archiveFile }
-                            .toTypedArray()
-            )
-            jvmArgs(
-                    "-DPaper.IgnoreJavaVersion=true",
-                    "-Dcom.mojang.eula.agree=true",
-            )
-            downloadPlugins {
-                url(
-                        "https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/" +
-                                "artifact/artifacts/${project.ext["faweArtifact"]}"
-                )
+        val supportedVersions = listOf("1.19.4", "1.20.6", "1.21.1", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8")
+        tasks {
+            register("cacheLatestFaweArtifact") {
+                val lastSuccessfulBuildUrl = uri("https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/api/json").toURL()
+                val artifact = ((JsonSlurper().parse(lastSuccessfulBuildUrl) as Map<*, *>)["artifacts"] as List<*>)
+                        .map { it as Map<*, *> }
+                        .map { it["fileName"] as String }
+                        .first { it -> it.contains("Paper") }
+                project.ext["faweArtifact"] = artifact
             }
-            group = "run paper"
-            runDirectory.set(file("run-$it"))
+
+            supportedVersions.forEach {
+                register<RunServer>("runServer-$it") {
+                    dependsOn(getByName("cacheLatestFaweArtifact"))
+                    minecraftVersion(it)
+                    pluginJars(project.files(
+                            project(":plotsquared-bukkit").tasks.named<Jar>("shadowJar")
+                                    .map { it.archiveFile }
+                    ))
+                    jvmArgs("-DPaper.IgnoreJavaVersion=true", "-Dcom.mojang.eula.agree=true")
+                    downloadPlugins {
+                        url("https://ci.athion.net/job/FastAsyncWorldEdit/lastSuccessfulBuild/artifact/artifacts/${project.ext["faweArtifact"]}")
+                    }
+                    group = "run paper"
+                    runDirectory.set(file("run-$it"))
+                }
+            }
         }
     }
 }
